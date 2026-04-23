@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Painel Financeiro — Jaraguá 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --vinho: #6B1C30;
+    --vinho2: #8B2E45;
+    --verde: #1A7A4A;
+    --verde-claro: #D6F0E3;
+    --rosa: #F5DDE3;
+    --amarelo: #FFF3CD;
+    --cinza: #F4F4F6;
+    --cinza2: #E8E8EC;
+    --texto: #1A1A2E;
+    --texto2: #6B6B80;
+    --branco: #FFFFFF;
+    --danger: #C0392B;
+    --warning: #E67E22;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F0EEF2;
+    color: var(--texto);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+  .header {
+    background: var(--vinho);
+    padding: 20px 20px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .logo {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 4px;
+  }
+  .mes-selector {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 14px 20px;
+    background: white;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--cinza2);
+  }
+  .mes-selector::-webkit-scrollbar { display: none; }
+  .mes-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--cinza2);
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--texto2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mes-btn.active {
+    background: var(--vinho);
+    border-color: var(--vinho);
+    color: white;
+  }
+  .content { padding: 16px; }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--texto2);
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .card-value.green { color: var(--verde); }
+  .card-value.red { color: var(--danger); }
+  .card-sub {
+    font-size: 11px;
+    color: var(--texto2);
+    margin-top: 6px;
+  }
+  .saldo-card {
+    background: var(--vinho);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(107,28,48,0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .saldo-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+  }
+  .saldo-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+    color: white;
+  }
+  .saldo-badge {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 8px 14px;
+    text-align: center;
+  }
+  .saldo-badge-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: white;
+  }
+  .saldo-badge-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--texto2);
+    margin-bottom: 10px;
+  }
+  .detalhe-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .detalhe-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--cinza);
+  }
+  .detalhe-item:last-child { border-bottom: none; }
+  .detalhe-left { display: flex; align-items: center; gap: 10px; }
+  .detalhe-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .detalhe-nome { font-size: 14px; font-weight: 500; }
+  .detalhe-valor {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--danger);
+  }
+  .detalhe-bar {
+    height: 3px;
+    background: var(--cinza2);
+    margin: 0 16px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .detalhe-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 14px;
+  }
+  .pizza-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pizza-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .pizza-leg-item { display: flex; align-items: center; gap: 8px; }
+  .pizza-leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .pizza-leg-label { font-size: 12px; color: var(--texto2); }
+  .pizza-leg-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--texto);
+    margin-left: auto;
+  }
+  .receitas-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .receitas-header {
+    background: var(--verde);
+    padding: 12px 16px;
+  }
+  .receitas-header-txt {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.9);
+  }
+  .receita-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--cinza);
+  }
+  .receita-item:last-child { border-bottom: none; }
+  .receita-nome { font-size: 13px; color: var(--texto); }
+  .receita-tipo { font-size: 11px; color: var(--texto2); margin-top: 2px; }
+  .receita-valor {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--verde);
+  }
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--cinza2);
+    border-top-color: var(--vinho);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-txt { font-size: 14px; color: var(--texto2); }
+  .error-box {
+    background: #FEF0EE;
+    border: 1.5px solid #FACCBB;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px;
+    font-size: 13px;
+    color: var(--danger);
+    line-height: 1.5;
+  }
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--texto2);
+  }
+  .fade-in {
+    animation: fadeIn 0.4s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="logo">Clik</span>
+    <span style="font-size:11px;color:rgba(255,255,255,0.5);">Jaraguá 2026</span>
+  </div>
+  <div class="header-title">Painel Financeiro</div>
+  <div class="header-sub" id="header-sub">Carregando dados...</div>
+</div>
+
+<div class="mes-selector" id="mes-selector"></div>
+
+<div class="content" id="content">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-txt">Buscando dados da planilha...</div>
+  </div>
+</div>
+
+<div class="footer">Clik Marketing Digital · Dados ao vivo do Google Sheets</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const SHEET_ID = '105P7fbldjI3VzO65uR7jVsPwkmK42AkK3R0cbcIYCL4';
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const catCores = {
+  'Cartões (casa)': '#6B1C30',
+  'Contas Fixas': '#5D6D7E',
+  'Custos Agência': '#BA7517',
+};
+
+let mesSelecionado = 'Mai';
+let dadosCache = null;
+let chartPizza = null;
+
+function fmtBRL(v) {
+  if (!v && v !== 0) return '—';
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+}
+
+function fmtPct(v) {
+  if (!v && v !== 0) return '0,0%';
+  return (v * 100).toFixed(1).replace('.', ',') + '%';
+}
+
+async function fetchSheetData(range) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=${range}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  // gviz returns: google.visualization.Query.setResponse({...});
+  const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
+  if (!match) throw new Error('Resposta inválida do Google Sheets. Verifique se a planilha está compartilhada como pública.');
+  const json = JSON.parse(match[1]);
+  return json.table;
+}
+
+async function carregarDados() {
+  try {
+    const table = await fetchSheetData('A1:N40');
+    const rows = table.rows;
+
+    const dados = { porMes: {}, receitas: [] };
+    let idxCartoes=-1, idxFixas=-1, idxReceitas=-1, idxAgencia=-1, idxSaldo=-1;
+
+    rows.forEach((row, i) => {
+      const a = row.c[0]?.v;
+      if (a === 'TOTAL GASTOS CARTÕES') idxCartoes = i;
+      if (a === 'TOTAL RECEITAS') idxReceitas = i;
+      if (a === 'TOTAL CUSTOS AGÊNCIA') idxAgencia = i;
+      if (a === 'SALDO DO MÊS') idxSaldo = i;
+      if (typeof a === 'string' && a.includes('Contas Fixas') && row.c[0]?.v && !a.includes('TOTAL')) idxFixas = i;
+
+      const receitasLabels = ['Salário','Aposentadoria','Contrato N','Formitz','Recanto','Aluguel'];
+      if (a && receitasLabels.some(r => String(a).includes(r))) {
+        dados.receitas.push({ nome: a, valores: row.c.slice(1, 13).map(c => c?.v || 0) });
+      }
+    });
+
+    MESES.forEach((mes, i) => {
+      const col = i + 1;
+      dados.porMes[mes] = {
+        receita:  rows[idxReceitas]?.c[col]?.v  || 0,
+        cartoes:  rows[idxCartoes]?.c[col]?.v   || 0,
+        fixas:    rows[idxFixas]?.c[col]?.v     || 0,
+        agencia:  rows[idxAgencia]?.c[col]?.v   || 0,
+        saldo:    rows[idxSaldo]?.c[col]?.v     || 0,
+      };
+    });
+
+    dadosCache = dados;
+
+    const sel = document.getElementById('mes-selector');
+    sel.innerHTML = '';
+    MESES.forEach(m => {
+      const btn = document.createElement('button');
+      btn.className = 'mes-btn' + (m === mesSelecionado ? ' active' : '');
+      btn.textContent = m;
+      btn.onclick = () => {
+        mesSelecionado = m;
+        document.querySelectorAll('.mes-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderPainel();
+      };
+      sel.appendChild(btn);
+    });
+
+    renderPainel();
+
+  } catch (err) {
+    document.getElementById('content').innerHTML = `
+      <div class="error-box">
+        ⚠️ Não foi possível carregar os dados.<br><br>
+        Verifique se a planilha está compartilhada como "Qualquer pessoa com o link pode visualizar".<br><br>
+        <small style="opacity:0.7">${err.message}</small>
+      </div>`;
+  }
+}
+
+function renderPainel() {
+  const d = dadosCache.porMes[mesSelecionado];
+  if (!d) return;
+
+  document.getElementById('header-sub').textContent = `${mesSelecionado} 2026`;
+
+  const totalDesp = d.cartoes + d.fixas + d.agencia;
+  const pctComp = d.receita > 0 ? totalDesp / d.receita : 0;
+
+  const detalhe = [
+    { nome: 'Cartões (casa)',  valor: d.cartoes, cor: catCores['Cartões (casa)'] },
+    { nome: 'Contas Fixas',   valor: d.fixas,   cor: catCores['Contas Fixas'] },
+    { nome: 'Custos Agência', valor: d.agencia, cor: catCores['Custos Agência'] },
+  ];
+  const maxDesp = Math.max(...detalhe.map(x => x.valor));
+
+  const mesIdx = MESES.indexOf(mesSelecionado);
+  const receitasLabelsMap = {
+    'Salário': 'CLT / Formitz', 'Aposentadoria': 'Benefício',
+    'Contrato N': 'Agência', 'Formitz': 'Agência',
+    'Recanto': 'Agência', 'Aluguel': 'Imóvel Manaus',
+  };
+  const receitaItems = dadosCache.receitas.map(r => ({
+    nome: r.nome.split('—')[0].trim().split('(')[0].trim(),
+    tipo: Object.entries(receitasLabelsMap).find(([k]) => r.nome.includes(k))?.[1] || '',
+    valor: r.valores[mesIdx] || 0
+  })).filter(r => r.valor > 0);
+
+  document.getElementById('content').innerHTML = `
+    <div class="fade-in">
+      <div class="saldo-card">
+        <div>
+          <div class="saldo-label">Saldo do Mês</div>
+          <div class="saldo-value">${fmtBRL(d.saldo)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px;">Receita ${fmtBRL(d.receita)}</div>
+        </div>
+        <div class="saldo-badge">
+          <div class="saldo-badge-pct">${fmtPct(pctComp)}</div>
+          <div class="saldo-badge-label">comprometido</div>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">Receita Total</div>
+          <div class="card-value green">${fmtBRL(d.receita)}</div>
+          <div class="card-sub">${receitaItems.length} fontes</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Total Despesas</div>
+          <div class="card-value red">${fmtBRL(totalDesp)}</div>
+          <div class="card-sub">cartões + fixas + agência</div>
+        </div>
+      </div>
+
+      <div class="section-title">Composição das despesas</div>
+      <div class="detalhe-card">
+        ${detalhe.map(item => `
+          <div class="detalhe-item">
+            <div class="detalhe-left">
+              <div class="detalhe-dot" style="background:${item.cor}"></div>
+              <div class="detalhe-nome">${item.nome}</div>
+            </div>
+            <div class="detalhe-valor">${fmtBRL(item.valor)}</div>
+          </div>
+          <div class="detalhe-bar">
+            <div class="detalhe-bar-fill" style="width:${maxDesp > 0 ? (item.valor/maxDesp*100).toFixed(1) : 0}%;background:${item.cor}"></div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Distribuição — ${mesSelecionado} 2026</div>
+        <div class="pizza-wrap">
+          <canvas id="pizza" width="130" height="130"></canvas>
+          <div class="pizza-legend">
+            ${detalhe.map(item => `
+              <div class="pizza-leg-item">
+                <div class="pizza-leg-dot" style="background:${item.cor}"></div>
+                <span class="pizza-leg-label">${item.nome}</span>
+                <span class="pizza-leg-pct">${totalDesp > 0 ? (item.valor/totalDesp*100).toFixed(0) : 0}%</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Fontes de receita</div>
+      <div class="receitas-card">
+        <div class="receitas-header">
+          <div class="receitas-header-txt">Receitas — ${mesSelecionado} 2026</div>
+        </div>
+        ${receitaItems.length > 0 ? receitaItems.map(r => `
+          <div class="receita-item">
+            <div>
+              <div class="receita-nome">${r.nome}</div>
+              <div class="receita-tipo">${r.tipo}</div>
+            </div>
+            <div class="receita-valor">${fmtBRL(r.valor)}</div>
+          </div>
+        `).join('') : `<div class="receita-item"><div class="receita-nome" style="color:var(--texto2)">Sem dados para este mês</div></div>`}
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const ctx = document.getElementById('pizza');
+    if (!ctx) return;
+    if (chartPizza) chartPizza.destroy();
+    chartPizza = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: detalhe.map(d => d.nome),
+        datasets: [{
+          data: detalhe.map(d => d.valor),
+          backgroundColor: detalhe.map(d => d.cor),
+          borderWidth: 2,
+          borderColor: '#fff',
+        }]
+      },
+      options: {
+        cutout: '60%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.parsed) } }
+        },
+        animation: { duration: 600 }
+      }
+    });
+  }, 100);
+}
+
+carregarDados();
+</script>
+</body>
+</html>
