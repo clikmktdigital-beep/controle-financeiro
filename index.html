@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Painel Financeiro — Jaraguá 2026</title>
+<title>Controle Financeiro 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -334,10 +334,10 @@
 
 <div class="header">
   <div class="header-top">
-    <span class="logo">Clik</span>
-    <span style="font-size:11px;color:rgba(255,255,255,0.5);">Jaraguá 2026</span>
+    <span class="logo">💰 Finanças</span>
+    <span style="font-size:11px;color:rgba(255,255,255,0.5);">2026</span>
   </div>
-  <div class="header-title">Painel Financeiro</div>
+  <div class="header-title">Controle Financeiro</div>
   <div class="header-sub" id="header-sub">Carregando dados...</div>
 </div>
 
@@ -350,7 +350,7 @@
   </div>
 </div>
 
-<div class="footer">Clik Marketing Digital · Dados ao vivo do Google Sheets</div>
+<div class="footer">Controle Financeiro 2026 · Dados ao vivo</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -401,7 +401,7 @@ async function carregarDados() {
       if (a === 'TOTAL RECEITAS') idxReceitas = i;
       if (a === 'TOTAL CUSTOS AGÊNCIA') idxAgencia = i;
       if (a === 'SALDO DO MÊS') idxSaldo = i;
-      if (typeof a === 'string' && a.includes('Contas Fixas') && row.c[0]?.v && !a.includes('TOTAL')) idxFixas = i;
+      if (typeof a === 'string' && (a.includes('Contas Fixas') || a.includes('Aluguel/Internet')) && !a.includes('TOTAL')) idxFixas = i;
 
       const receitasLabels = ['Salário','Aposentadoria','Contrato N','Formitz','Recanto','Aluguel'];
       if (a && receitasLabels.some(r => String(a).includes(r))) {
@@ -585,3 +585,4 @@ carregarDados();
 </script>
 </body>
 </html>
+
