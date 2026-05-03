@@ -1,3 +1,8 @@
+
+ 
+   
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -377,8 +382,9 @@ function fmtPct(v) {
 }
 
 async function fetchSheetData(range) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=${range}`;
-  const res = await fetch(url);
+  const cacheBust = new Date().getTime();
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=${range}&_=${cacheBust}`;
+  const res = await fetch(url, { cache: 'no-store' });
   const text = await res.text();
   // gviz returns: google.visualization.Query.setResponse({...});
   const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
@@ -401,7 +407,8 @@ async function carregarDados() {
       if (a === 'TOTAL RECEITAS') idxReceitas = i;
       if (a === 'TOTAL CUSTOS AGÊNCIA') idxAgencia = i;
       if (a === 'SALDO DO MÊS') idxSaldo = i;
-      if (typeof a === 'string' && (a.includes('Contas Fixas') || a.includes('Aluguel/Internet')) && !a.includes('TOTAL')) idxFixas = i;
+      // Find Contas Fixas line in Consolidado (row label contains "Contas Fixas")
+      if (typeof a === 'string' && a.includes('Contas Fixas') && !a.includes('TOTAL')) idxFixas = i;
 
       const receitasLabels = ['Salário','Aposentadoria','Contrato N','Formitz','Recanto','Aluguel'];
       if (a && receitasLabels.some(r => String(a).includes(r))) {
@@ -585,4 +592,3 @@ carregarDados();
 </script>
 </body>
 </html>
-
