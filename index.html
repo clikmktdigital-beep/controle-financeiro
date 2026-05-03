@@ -3,7 +3,7 @@
   
  
  
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -161,22 +161,29 @@ async function carregarDados() {
     const mesIdx = MESES.indexOf(mesSelecionado);
     const colMes = String.fromCharCode(66 + mesIdx); // B=Jan, C=Fev... F=Mai
 
-    // Painel: linha 4 tem os valores dos cards
-    // A4=Receita, E4=Despesas, I4=Saldo, M4=% comprometida
-    const [receita, despesas, saldo, pct] = await Promise.all([
-      fetchCell('Painel', 'A4'),
-      fetchCell('Painel', 'E4'),
-      fetchCell('Painel', 'I4'),
-      fetchCell('Painel', 'M4'),
+    // Painel: células âncora das mesclagens
+    const [receita, despesas, saldo, pct, cartoes, fixas, agencia, inter] = await Promise.all([
+      fetchCell('Painel', 'A4'),  // Receita Total (mesclada A4:D4)
+      fetchCell('Painel', 'E4'),  // Total Despesas (mesclada E4:H4)
+      fetchCell('Painel', 'I4'),  // Saldo do Mês (mesclada I4:L4)
+      fetchCell('Painel', 'M4'),  // Renda Comprometida
+      fetchCell('Painel', 'H8'),  // Cartões (casa)
+      fetchCell('Painel', 'H9'),  // Contas Fixas
+      fetchCell('Painel', 'H10'), // Custos Agência
+      fetchCell('Painel', 'H11'), // Acordo Inter
     ]);
 
-    // Detalhamento do Painel (linhas 8-11)
-    const detRows = await fetchRange('Painel', 'A8:H11');
+    const detRows = [
+      { nome: 'Cartões (casa)',  valor: cartoes, cor: '#6B1C30' },
+      { nome: 'Contas Fixas',   valor: fixas,   cor: '#5D6D7E' },
+      { nome: 'Custos Agência', valor: agencia, cor: '#BA7517' },
+      { nome: 'Acordo Inter',   valor: inter,   cor: '#B7360A' },
+    ].filter(d => d.valor);
 
     // Pagamentos
     const pgtoRows = await fetchRange('Pagamentos', 'A4:F30');
 
-    dadosCache = { receita, despesas, saldo, pct, detRows, pgtoRows };
+    dadosCache = { receita, despesas, saldo, pct, detRows: [{ nome: 'Cartões (casa)', valor: cartoes, cor: '#6B1C30' }, { nome: 'Contas Fixas', valor: fixas, cor: '#5D6D7E' }, { nome: 'Custos Agência', valor: agencia, cor: '#BA7517' }, { nome: 'Acordo Inter', valor: inter, cor: '#B7360A' }].filter(d => d.valor), pgtoRows };
     renderPainel();
 
   } catch (err) {
@@ -200,13 +207,7 @@ function renderPainel() {
   const pct = d.pct || 0;
 
   // Detalhamento
-  const detalhe = [];
-  const coresDet = ['#6B1C30','#5D6D7E','#BA7517','#B7360A'];
-  d.detRows.forEach((row, i) => {
-    const nome = row.c?.[0]?.v;
-    const valor = row.c?.[7]?.v || row.c?.[5]?.v || 0;
-    if (nome && valor) detalhe.push({ nome, valor, cor: coresDet[i] || '#888' });
-  });
+  const detalhe = d.detRows || [];
   const maxDesp = Math.max(...detalhe.map(x => x.valor), 1);
 
   // Pagamentos
@@ -352,4 +353,3 @@ carregarDados();
 </script>
 </body>
 </html>
-
