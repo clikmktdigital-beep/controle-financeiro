@@ -355,6 +355,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const SHEET_ID = '105P7fbldjI3VzO65uR7jVsPwkmK42AkK3R0cbcIYCL4';
+const PUB_ID = '2PACX-1vSQRHjVCSk1OAk6UYYBGGWMiMC_ALuuL6bBuEzyZTH1qwJJkQou_Cogqnq_Nj-LwM7LesJQeCH5tQ5M';
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const catCores = {
   'Cartões (casa)': '#6B1C30',
@@ -376,36 +377,53 @@ function fmtPct(v) {
   return (v * 100).toFixed(1).replace('.', ',') + '%';
 }
 
-async function fetchSheetData(range) {
+async function fetchRow(row) {
   const cacheBust = new Date().getTime();
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=${range}&_=${cacheBust}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=A${row}:N${row}&headers=0&_=${cacheBust}`;
   const res = await fetch(url, { cache: 'no-store' });
   const text = await res.text();
-  // gviz returns: google.visualization.Query.setResponse({...});
   const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
-  if (!match) throw new Error('Resposta inválida do Google Sheets. Verifique se a planilha está compartilhada como pública.');
+  if (!match) return null;
+  const json = JSON.parse(match[1]);
+  return json.table.rows[0];
+}
+
+async function fetchSheetData(range) {
+  const cacheBust = new Date().getTime();
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Consolidado&range=${range}&headers=0&_=${cacheBust}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const text = await res.text();
+  const match = text.match(/setResponse\(([\s\S]+)\);?\s*$/);
+  if (!match) throw new Error('Resposta inválida. Verifique se a planilha está compartilhada.');
   const json = JSON.parse(match[1]);
   return json.table;
 }
 
+async function fetchCSVData() {
+  // Busca CSV publicado — sempre atualizado, sem cache
+  const cacheBust = new Date().getTime();
+  const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?gid=0&single=true&output=csv&_=${cacheBust}`;
+  const res = await fetch(url, { cache: 'no-store' });
+  const text = await res.text();
+  return text;
+}
+
 async function carregarDados() {
   try {
-    const table = await fetchSheetData('A1:N40');
-    const rows = table.rows;
+    // Buscar linhas específicas diretamente — evita problema de linhas vazias
+    const [rowCartoes, rowFixas, rowReceitas, rowAgencia, rowSaldo] = await Promise.all([
+      fetchRow(12),
+      fetchRow(14),
+      fetchRow(23),
+      fetchRow(28),
+      fetchRow(34),
+    ]);
 
+    const tableReceitas = await fetchSheetData('A16:N22');
     const dados = { porMes: {}, receitas: [] };
-    // Linhas do Consolidado (0-indexed): linha 12=11, 14=13, 23=22, 28=27, 34=33
-    let idxCartoes=11, idxFixas=13, idxReceitas=22, idxAgencia=27, idxSaldo=33;
 
-    // Verificação dinâmica como fallback
-    rows.forEach((row, i) => {
+    tableReceitas.rows.forEach(row => {
       const a = row.c[0]?.v;
-      if (a === 'TOTAL GASTOS CARTÕES') idxCartoes = i;
-      if (a === 'TOTAL RECEITAS') idxReceitas = i;
-      if (a === 'TOTAL CUSTOS AGÊNCIA') idxAgencia = i;
-      if (a === 'SALDO DO MÊS') idxSaldo = i;
-      if (typeof a === 'string' && a.includes('Contas Fixas') && !a.includes('TOTAL')) idxFixas = i;
-
       const receitasLabels = ['Salário','Aposentadoria','Contrato N','Formitz','Recanto','Aluguel'];
       if (a && receitasLabels.some(r => String(a).includes(r))) {
         dados.receitas.push({ nome: a, valores: row.c.slice(1, 13).map(c => c?.v || 0) });
@@ -415,11 +433,11 @@ async function carregarDados() {
     MESES.forEach((mes, i) => {
       const col = i + 1;
       dados.porMes[mes] = {
-        receita:  rows[idxReceitas]?.c[col]?.v  || 0,
-        cartoes:  rows[idxCartoes]?.c[col]?.v   || 0,
-        fixas:    rows[idxFixas]?.c[col]?.v     || 0,
-        agencia:  rows[idxAgencia]?.c[col]?.v   || 0,
-        saldo:    rows[idxSaldo]?.c[col]?.v     || 0,
+        receita: rowReceitas?.c[col]?.v || 0,
+        cartoes: rowCartoes?.c[col]?.v  || 0,
+        fixas:   rowFixas?.c[col]?.v    || 0,
+        agencia: rowAgencia?.c[col]?.v  || 0,
+        saldo:   rowSaldo?.c[col]?.v    || 0,
       };
     });
 
@@ -451,6 +469,7 @@ async function carregarDados() {
       </div>`;
   }
 }
+
 
 function renderPainel() {
   const d = dadosCache.porMes[mesSelecionado];
