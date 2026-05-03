@@ -394,15 +394,16 @@ async function carregarDados() {
     const rows = table.rows;
 
     const dados = { porMes: {}, receitas: [] };
-    let idxCartoes=-1, idxFixas=-1, idxReceitas=-1, idxAgencia=-1, idxSaldo=-1;
+    // Linhas do Consolidado (0-indexed): linha 12=11, 14=13, 23=22, 28=27, 34=33
+    let idxCartoes=11, idxFixas=13, idxReceitas=22, idxAgencia=27, idxSaldo=33;
 
+    // Verificação dinâmica como fallback
     rows.forEach((row, i) => {
       const a = row.c[0]?.v;
       if (a === 'TOTAL GASTOS CARTÕES') idxCartoes = i;
       if (a === 'TOTAL RECEITAS') idxReceitas = i;
       if (a === 'TOTAL CUSTOS AGÊNCIA') idxAgencia = i;
       if (a === 'SALDO DO MÊS') idxSaldo = i;
-      // Find Contas Fixas line in Consolidado (row label contains "Contas Fixas")
       if (typeof a === 'string' && a.includes('Contas Fixas') && !a.includes('TOTAL')) idxFixas = i;
 
       const receitasLabels = ['Salário','Aposentadoria','Contrato N','Formitz','Recanto','Aluguel'];
